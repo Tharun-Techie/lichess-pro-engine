@@ -1,0 +1,158 @@
+#lichess-engine-overlay {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.engine-overlay {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    min-width: 200px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.quick-analyze-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.quick-analyze-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.quick-analyze-btn .icon {
+    font-size: 16px;
+}
+
+.quick-result {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.quick-result.hidden {
+    display: none;
+}
+
+.best-move-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.best-move-display .label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 12px;
+}
+
+.best-move-display .move {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: #28a745;
+    font-size: 14px;
+    background: rgba(40, 167, 69, 0.2);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.evaluation-display {
+    text-align: center;
+}
+
+.evaluation-display .eval {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    background: rgba(44, 62, 80, 0.1);
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* Animation for overlay appearance */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.engine-overlay {
+    animation: fadeInUp 0.3s ease;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    #lichess-engine-overlay {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .engine-overlay {
+        min-width: 160px;
+        padding: 12px;
+    }
+    
+    .quick-analyze-btn {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .engine-overlay {
+        background: rgba(44, 62, 80, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .best-move-display .label {
+        color: #ecf0f1;
+    }
+    
+    .evaluation-display .eval {
+        color: #ecf0f1;
+        background: rgba(236, 240, 241, 0.1);
+    }
+}
+
+/* Integration with Lichess board */
+.is-2d .engine-overlay {
+    right: 280px; /* Adjust based on Lichess layout */
+}
+
+.is-3d .engine-overlay {
+    right: 320px; /* Adjust for 3D board */
+}
+
+/* Hide overlay on certain pages */
+body.puzzle .engine-overlay,
+body.analysis .engine-overlay {
+    display: none;
+}

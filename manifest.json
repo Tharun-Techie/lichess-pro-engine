@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Lichess Pro Engine Helper",
+  "version": "2.0",
+  "description": "Advanced chess analysis tool with Stockfish engine for Lichess",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://lichess.org/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Lichess Pro Engine Helper"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://lichess.org/*"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["stockfish.js", "stockfish-17-single-part-*.wasm"],
+      "matches": ["https://lichess.org/*"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
