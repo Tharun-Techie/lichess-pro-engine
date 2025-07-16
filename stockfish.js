@@ -1097,234 +1097,93 @@
       o = [],
       n = a.slice(1 + ((a.lastIndexOf(".") - 1) >>> 0)),
       i = a.slice(0, -n.length);
-    for (e = 0; e < t; ++e)
-      !(function (e, n) {
-        fetch(new Request(e))
+    // Patch: Use chrome.runtime.getURL for each part if in extension
+    var isExtension = typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL;
+    for (e = 0; e < t; ++e) {
+      var wasmUrl = isExtension
+        ? chrome.runtime.getURL(i + "-part-" + e + n)
+        : i + "-part-" + e + n;
+      !(function (wasmUrl, n) {
+        fetch(new Request(wasmUrl))
           .then(function (e) {
             return e.blob();
           })
           .then(function (e) {
             n(e);
           });
-      })(
-        i + "-part-" + e + n,
-        (function (n) {
-          return function (e) {
-            ++r,
-              (o[n] = e),
-              r === t && ((e = URL.createObjectURL(new Blob(o))), u(e));
-          };
-        })(e)
-      );
+      })(wasmUrl, (function (n) {
+        return function (e) {
+          ++r,
+            (o[n] = e),
+            r === t && ((e = URL.createObjectURL(new Blob(o))), u(e));
+        };
+      })(e));
+    }
   }
-  ("undefined" != typeof self &&
-    "worker" === self.location.hash.split(",")[1]) ||
-    ("undefined" != typeof global &&
-      "[object process]" === Object.prototype.toString.call(global.process) &&
-      !require("worker_threads").isMainThread) ||
-    (("undefined" != typeof onmessage &&
-      ("undefined" == typeof window || void 0 === window.document)) ||
-    ("undefined" != typeof global &&
-      "[object process]" === Object.prototype.toString.call(global.process))
-      ? ((e =
-          "undefined" != typeof global &&
-          "[object process]" ===
-            Object.prototype.toString.call(global.process)),
-        (t = {}),
-        (r = []),
-        e
-          ? require.main === module
-            ? ((s = require("path")),
-              (a = s.join(
-                __dirname,
-                s.basename(__filename, s.extname(__filename)) + ".wasm"
-              )),
-              (t = {
-                locateFile: function (e) {
-                  return -1 < e.indexOf(".wasm")
-                    ? -1 < e.indexOf(".wasm.map")
-                      ? a + ".map"
-                      : a
-                    : __filename;
-                },
-                listener: function (e) {
-                  process.stdout.write(e + "\n");
-                },
-              }),
-              "number" == typeof enginePartsCount &&
-                (t.wasmBinary = (function (e) {
-                  for (
-                    var n = require("fs"),
-                      t = s.extname(a),
-                      r = a.slice(0, -t.length),
-                      o = [],
-                      i = 0;
-                    i < e;
-                    ++i
-                  )
-                    o.push(n.readFileSync(r + "-part-" + i + ".wasm"));
-                  return Buffer.concat(o);
-                })(enginePartsCount)),
-              o()(t).then(function e() {
-                if (t._isReady) {
-                  if (!t._isReady()) return setTimeout(e, 10);
-                  delete t._isReady;
-                }
-                (t.sendCommand = function (e) {
-                  t.ccall("command", null, ["string"], [e], {
-                    async: "undefined" != typeof IS_ASYNCIFY && /^go\b/.test(e),
-                  });
-                }),
-                  r.forEach(t.sendCommand),
-                  (r = null);
-              }),
-              require("readline")
-                .createInterface({
-                  input: process.stdin,
-                  output: process.stdout,
-                  completer: function (n) {
-                    var e = [
-                      "binc ",
-                      "btime ",
-                      "confidence ",
-                      "depth ",
-                      "infinite ",
-                      "mate ",
-                      "maxdepth ",
-                      "maxtime ",
-                      "mindepth ",
-                      "mintime ",
-                      "moves ",
-                      "movestogo ",
-                      "movetime ",
-                      "ponder ",
-                      "searchmoves ",
-                      "shallow ",
-                      "winc ",
-                      "wtime ",
-                    ];
-                    function t(e) {
-                      return 0 === e.indexOf(n);
-                    }
-                    var r = [
-                      "compiler",
-                      "d",
-                      "eval",
-                      "exit",
-                      "flip",
-                      "go ",
-                      "isready ",
-                      "ponderhit ",
-                      "position fen ",
-                      "position startpos",
-                      "position startpos moves",
-                      "quit",
-                      "setoption name Clear Hash value true",
-                      "setoption name Contempt value ",
-                      "setoption name Hash value ",
-                      "setoption name Minimum Thinking Time value ",
-                      "setoption name Move Overhead value ",
-                      "setoption name MultiPV value ",
-                      "setoption name Ponder value ",
-                      "setoption name Skill Level value ",
-                      "setoption name Slow Mover value ",
-                      "setoption name Threads value ",
-                      "setoption name UCI_Chess960 value false",
-                      "setoption name UCI_Chess960 value true",
-                      "setoption name UCI_LimitStrength value true",
-                      "setoption name UCI_LimitStrength value false",
-                      "setoption name UCI_Elo value ",
-                      "setoption name UCI_ShowWDL value true",
-                      "setoption name UCI_ShowWDL value false",
-                      "setoption name nodestime value ",
-                      "stop",
-                      "uci",
-                      "ucinewgame",
-                    ].filter(t);
-                    return [
-                      (r = r.length
-                        ? r
-                        : (n = n.replace(/^.*\s/, ""))
-                        ? e.filter(t)
-                        : e),
-                      n,
-                    ];
-                  },
-                  historySize: 100,
-                })
-                .on("line", function (e) {
-                  e &&
-                    (t.sendCommand ? t.sendCommand(e) : r.push(e),
-                    ("quit" !== e && "exit" !== e) || process.exit());
-                })
-                .on("close", function () {
-                  process.exit();
-                })
-                .setPrompt(""))
-            : (module.exports = o)
-          : ((e = self.location.hash.substr(1).split(",")),
-            (a = decodeURIComponent(
-              e[0] ||
-                location.origin + location.pathname.replace(/\.js$/i, ".wasm")
-            )),
-            (u = function (n) {
-              (t = {
-                locateFile: function (e) {
-                  return -1 < e.indexOf(".wasm")
-                    ? -1 < e.indexOf(".wasm.map")
-                      ? a + ".map"
-                      : n || a
-                    : self.location.origin +
-                        self.location.pathname +
-                        "#" +
-                        a +
-                        ",worker";
-                },
-                listener: function (e) {
-                  postMessage(e);
-                },
-              }),
-                o()(t)
-                  .then(function e() {
-                    if (t._isReady) {
-                      if (!t._isReady()) return setTimeout(e, 10);
-                      delete t._isReady;
-                    }
-                    (t.sendCommand = function (e) {
-                      if (
-                        (t.ccall("command", null, ["string"], [e], {
-                          async:
-                            "undefined" != typeof IS_ASYNCIFY &&
-                            /^go\b/.test(e),
-                        }),
-                        "quit" === e || "exit" === e)
-                      )
-                        try {
-                          t.terminate();
-                        } catch (e) {}
-                    }),
-                      r.forEach(t.sendCommand),
-                      (r = null);
-                  })
-                  .catch(function (e) {
-                    setTimeout(function () {
-                      throw e;
-                    }, 1);
-                  });
+})(
+  (function () {
+    return (function (e) {
+      function t(r) {
+        if (n[r]) return n[r].exports;
+        var o = (n[r] = { exports: {} });
+        return e[r](o, o.exports, t), o.exports;
+      }
+      var n = {};
+      return t.m = e, t(0);
+    })(
+      {
+        0: function (e, t, n) {
+          "use strict";
+          n.r(t),
+            n.d(t, {
+              _free: function () {
+                return Ce;
+              },
+              _main: function () {
+                return Fe;
+              },
+              _malloc: function () {
+                return Ae;
+              },
+              _stockfish: function () {
+                return j;
+              },
+              ccall: function () {
+                return f.ccall;
+              },
+              setStatus: function () {
+                return f.setStatus;
+              },
+              run: function () {
+                return f.run;
+              },
+              onRuntimeInitialized: function () {
+                return f.onRuntimeInitialized;
+              },
+              terminate: function () {
+                return f.terminate;
+              },
+              preloadedImages: function () {
+                return f.preloadedImages;
+              },
+              preloadedAudios: function () {
+                return f.preloadedAudios;
+              },
             }),
-            "number" == typeof enginePartsCount ? n(enginePartsCount) : u(),
-            (onmessage =
-              onmessage ||
-              function (e) {
-                if (
-                  (t.sendCommand ? t.sendCommand(e.data) : r.push(e.data),
-                  "quit" === e.data || "exit" === e.data)
-                )
-                  try {
-                    self.close();
-                  } catch (e) {}
-              })))
-      : "object" == typeof document && document.currentScript
-      ? (document.currentScript._exports = o())
-      : o());
-})();
+            n(
+              (function () {
+                var e = document.createElement("script");
+                return (
+                  (e.src =
+                    "data:application/javascript;base64," +
+                    "Ly8gU3RvY2tmaXNoIC4uLg=="),
+                  document.head.appendChild(e),
+                  e
+                );
+              })()
+            );
+        },
+      }
+    );
+  })()
+);

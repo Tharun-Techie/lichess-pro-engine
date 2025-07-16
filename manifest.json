@@ -30,7 +30,7 @@
   "web_accessible_resources": [
     {
       "resources": ["stockfish.js", "stockfish-17-single-part-*.wasm"],
-      "matches": ["https://lichess.org/*"]
+      "matches": ["<all_urls>"]
     }
   ],
   "background": {

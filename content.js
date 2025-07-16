@@ -19,8 +19,12 @@ class LichessGameExtractor {
   setupMessageListener() {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.action === "getGameData") {
+        // Add debug info
+        if (!this.currentMoves || this.currentMoves.length === 0) {
+          console.warn("Lichess Pro Engine: No moves found for analysis.");
+        }
         sendResponse({
-          success: true,
+          success: !!(this.currentMoves && this.currentMoves.length > 0),
           data: {
             moves: this.currentMoves,
             gameType: this.gameType,
@@ -29,6 +33,7 @@ class LichessGameExtractor {
             timeControl: this.timeControl,
             isGameActive: this.isGameActive(),
           },
+          error: (!this.currentMoves || this.currentMoves.length === 0) ? "No moves found" : undefined
         });
       }
       return true;
@@ -70,21 +75,40 @@ class LichessGameExtractor {
   }
 
   extractMoves() {
-    const moves = [];
-    const moveElements = document.querySelectorAll(".move .move__ply");
-
+    // Try to extract moves from PGN textarea (Lichess analysis, studies, etc.)
+    let moves = [];
+    const pgnTextarea = document.querySelector('textarea.pgn');
+    if (pgnTextarea && pgnTextarea.value) {
+      moves = this.extractMovesFromPGN(pgnTextarea.value);
+      if (moves.length > 0) {
+        this.currentMoves = moves;
+        this.lastMoveTime = Date.now();
+        return;
+      }
+    }
+    // Try to extract moves from move list (live games)
+    const moveElements = document.querySelectorAll('.move .move__ply, .vertical-move-list__move');
+    moves = [];
     moveElements.forEach((el) => {
       const moveText = el.textContent.trim();
       if (moveText && this.isValidMove(moveText)) {
-        // Optional: convert SAN to UCI or keep as-is depending on your engine config
         moves.push(moveText);
       }
     });
-
-    if (moves.length !== this.currentMoves.length) {
+    if (moves.length > 0) {
       this.currentMoves = moves;
       this.lastMoveTime = Date.now();
+      return;
     }
+    // Try to extract from lichess game data if available
+    const gameData = this.extractFromGameData();
+    if (gameData && Array.isArray(gameData.moves) && gameData.moves.length > 0) {
+      this.currentMoves = gameData.moves;
+      this.lastMoveTime = Date.now();
+      return;
+    }
+    // If nothing found, clear moves
+    this.currentMoves = [];
   }
 
   extractMovesFromPGN(pgn) {
